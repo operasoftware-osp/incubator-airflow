@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import flask_login
+import json
 
 # Need to expose these downstream
 # pylint: disable=unused-import
@@ -35,10 +36,20 @@ def get_config_param(param):
     return str(configuration.get('google', param))
 
 
+def get_auth_metadata(username):
+    authentication_metadata_file = configuration.get('webserver', 'osp_auth_metadata')
+
+    with open(authentication_metadata_file) as auth_json:
+        metadata = json.loads(auth_json.read())
+
+    return metadata.get(username, {})
+
+
 class GoogleUser(models.User):
 
     def __init__(self, user):
         self.user = user
+        self.osp_auth_metadata = None
 
     def is_active(self):
         '''Required by flask_login'''
@@ -62,7 +73,12 @@ class GoogleUser(models.User):
 
     def is_superuser(self):
         '''Access all the things'''
-        return True
+        return 'osp' in self.osp_groups()
+
+    def osp_groups(self):
+        if self.osp_auth_metadata is None:
+            self.osp_auth_metadata = get_auth_metadata(self.user.email).get('projects', [])
+        return self.osp_auth_metadata
 
 
 class AuthenticationError(Exception):
