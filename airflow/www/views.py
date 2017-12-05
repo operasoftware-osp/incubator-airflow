@@ -1835,7 +1835,7 @@ class HomeView(AdminIndexView):
         elif do_filter and owner_mode == 'user':
             sql_query = sql_query.filter(
                 ~DM.is_subdag, DM.is_active,
-                DM.owners == current_user.user.username
+                DM.owners.in_(current_user.osp_groups())
             )
         else:
             sql_query = sql_query.filter(
@@ -1882,7 +1882,7 @@ class HomeView(AdminIndexView):
             webserver_dags = {
                 dag.dag_id: dag
                 for dag in unfiltered_webserver_dags
-                if dag.owner == current_user.user.username
+                if dag.owner in current_user.osp_groups()
             }
         else:
             webserver_dags = {
