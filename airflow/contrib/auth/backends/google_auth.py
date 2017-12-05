@@ -17,6 +17,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import flask_login
+import json
 
 # Need to expose these downstream
 # flake8: noqa: F401
@@ -37,10 +38,20 @@ def get_config_param(param):
     return str(configuration.conf.get('google', param))
 
 
+def get_auth_metadata(username):
+    authentication_metadata_file = configuration.get('webserver', 'osp_auth_metadata')
+
+    with open(authentication_metadata_file) as auth_json:
+        metadata = json.loads(auth_json.read())
+
+    return metadata.get(username, {})
+
+
 class GoogleUser(models.User):
 
     def __init__(self, user):
         self.user = user
+        self.osp_auth_metadata = None
 
     @property
     def is_active(self):
@@ -67,7 +78,13 @@ class GoogleUser(models.User):
 
     def is_superuser(self):
         """Access all the things"""
-        return True
+        return 'osp' in self.osp_groups
+
+    @property
+    def osp_groups(self):
+        if self.osp_auth_metadata is None:
+            self.osp_auth_metadata = get_auth_metadata(self.user.email).get('projects', [])
+        return self.osp_auth_metadata
 
 
 class AuthenticationError(Exception):

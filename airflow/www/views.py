@@ -84,6 +84,8 @@ from airflow.www.forms import (DateTimeForm, DateTimeWithNumRunsForm,
                                DateTimeWithNumRunsWithDagRunsForm)
 from airflow.www.validators import GreaterEqualThan
 
+from airflow.api.auth.backend.osp_auth import osp_expose_only_owned_entities, osp_allow_superuser_only
+
 QUERY_LIMIT = 100000
 CHART_LIMIT = 200000
 
@@ -384,6 +386,7 @@ class Airflow(BaseView):
     @expose('/chart_data')
     @data_profiling_required
     @wwwutils.gzipped
+    @osp_allow_superuser_only
     def chart_data(self):
         from airflow import macros
         import pandas as pd
@@ -520,6 +523,7 @@ class Airflow(BaseView):
 
     @expose('/chart')
     @data_profiling_required
+    @osp_allow_superuser_only
     def chart(self):
         if conf.getboolean('core', 'secure_mode'):
             abort(404)
@@ -654,6 +658,7 @@ class Airflow(BaseView):
 
     @expose('/code')
     @login_required
+    @osp_expose_only_owned_entities
     def code(self):
         dag_id = request.args.get('dag_id')
         dag = dagbag.get_dag(dag_id)
@@ -674,6 +679,7 @@ class Airflow(BaseView):
     @expose('/dag_details')
     @login_required
     @provide_session
+    @osp_expose_only_owned_entities
     def dag_details(self, session=None):
         dag_id = request.args.get('dag_id')
         dag = dagbag.get_dag(dag_id)
@@ -710,6 +716,7 @@ class Airflow(BaseView):
 
     @expose('/pickle_info')
     @login_required
+    @osp_expose_only_owned_entities
     def pickle_info(self):
         d = {}
         dag_id = request.args.get('dag_id')
@@ -732,6 +739,7 @@ class Airflow(BaseView):
     @expose('/rendered')
     @login_required
     @wwwutils.action_logging
+    @osp_expose_only_owned_entities
     def rendered(self):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
@@ -768,6 +776,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def get_logs_with_metadata(self, session=None):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
@@ -827,6 +836,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def log(self, session=None):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
@@ -856,6 +866,7 @@ class Airflow(BaseView):
     @expose('/task')
     @login_required
     @wwwutils.action_logging
+    @osp_expose_only_owned_entities
     def task(self):
         TI = models.TaskInstance
 
@@ -945,6 +956,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def xcom(self, session=None):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
@@ -983,6 +995,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @wwwutils.notify_owner
+    @osp_expose_only_owned_entities
     def run(self):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
@@ -1051,6 +1064,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @wwwutils.notify_owner
+    @osp_expose_only_owned_entities
     def delete(self):
         from airflow.api.common.experimental import delete_dag
         from airflow.exceptions import DagNotFound, DagFileExists
@@ -1077,6 +1091,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @wwwutils.notify_owner
+    @osp_expose_only_owned_entities
     def trigger(self):
         dag_id = request.args.get('dag_id')
         origin = request.args.get('origin') or "/admin/"
@@ -1147,6 +1162,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @wwwutils.notify_owner
+    @osp_expose_only_owned_entities
     def clear(self):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
@@ -1177,6 +1193,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @wwwutils.notify_owner
+    @osp_expose_only_owned_entities
     def dagrun_clear(self):
         dag_id = request.args.get('dag_id')
         origin = request.args.get('origin')
@@ -1194,6 +1211,7 @@ class Airflow(BaseView):
     @expose('/blocked')
     @login_required
     @provide_session
+    @osp_allow_superuser_only
     def blocked(self, session=None):
         DR = models.DagRun
         dags = session\
@@ -1275,6 +1293,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @wwwutils.notify_owner
+    @osp_expose_only_owned_entities
     def dagrun_failed(self):
         dag_id = request.args.get('dag_id')
         execution_date = request.args.get('execution_date')
@@ -1287,6 +1306,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @wwwutils.notify_owner
+    @osp_expose_only_owned_entities
     def dagrun_success(self):
         dag_id = request.args.get('dag_id')
         execution_date = request.args.get('execution_date')
@@ -1341,6 +1361,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @wwwutils.notify_owner
+    @osp_expose_only_owned_entities
     def failed(self):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
@@ -1361,6 +1382,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @wwwutils.notify_owner
+    @osp_expose_only_owned_entities
     def success(self):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
@@ -1382,6 +1404,7 @@ class Airflow(BaseView):
     @wwwutils.gzipped
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def tree(self, session=None):
         default_dag_run = conf.getint('webserver', 'default_dag_run_display_number')
         dag_id = request.args.get('dag_id')
@@ -1510,6 +1533,7 @@ class Airflow(BaseView):
     @wwwutils.gzipped
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def graph(self, session=None):
         dag_id = request.args.get('dag_id')
         blur = conf.getboolean('webserver', 'demo_mode')
@@ -1606,6 +1630,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def duration(self, session=None):
         default_dag_run = conf.getint('webserver', 'default_dag_run_display_number')
         dag_id = request.args.get('dag_id')
@@ -1718,6 +1743,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def tries(self, session=None):
         default_dag_run = conf.getint('webserver', 'default_dag_run_display_number')
         dag_id = request.args.get('dag_id')
@@ -1782,6 +1808,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def landing_times(self, session=None):
         default_dag_run = conf.getint('webserver', 'default_dag_run_display_number')
         dag_id = request.args.get('dag_id')
@@ -1860,6 +1887,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def paused(self, session=None):
         DagModel = models.DagModel
         dag_id = request.args.get('dag_id')
@@ -1879,6 +1907,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def refresh(self, session=None):
         DagModel = models.DagModel
         dag_id = request.args.get('dag_id')
@@ -1899,6 +1928,7 @@ class Airflow(BaseView):
     @expose('/refresh_all')
     @login_required
     @wwwutils.action_logging
+    @osp_allow_superuser_only
     def refresh_all(self):
         dagbag.collect_dags(only_if_updated=False)
         flash("All DAGs are now up to date")
@@ -1908,6 +1938,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def gantt(self, session=None):
         dag_id = request.args.get('dag_id')
         dag = dagbag.get_dag(dag_id)
@@ -1990,6 +2021,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
+    @osp_expose_only_owned_entities
     def task_instances(self, session=None):
         dag_id = request.args.get('dag_id')
         dag = dagbag.get_dag(dag_id)
@@ -2009,6 +2041,7 @@ class Airflow(BaseView):
     @expose('/variables/<form>', methods=["GET", "POST"])
     @login_required
     @wwwutils.action_logging
+    @osp_allow_superuser_only
     def variables(self, form):
         try:
             if request.method == 'POST':
@@ -2032,6 +2065,7 @@ class Airflow(BaseView):
     @expose('/varimport', methods=["GET", "POST"])
     @login_required
     @wwwutils.action_logging
+    @osp_allow_superuser_only
     def varimport(self):
         try:
             d = json.load(UTF8_READER(request.files['file']))
@@ -2101,7 +2135,7 @@ class HomeView(AdminIndexView):
         elif do_filter and owner_mode == 'user':
             sql_query = sql_query.filter(
                 ~DM.is_subdag, DM.is_active,
-                DM.owners == current_user.user.username
+                DM.owners.in_(current_user.osp_groups)
             )
         else:
             sql_query = sql_query.filter(
@@ -2145,7 +2179,7 @@ class HomeView(AdminIndexView):
             webserver_dags = {
                 dag.dag_id: dag
                 for dag in unfiltered_webserver_dags
-                if dag.owner == current_user.user.username
+                if dag.owner in current_user.osp_groups
             }
         else:
             webserver_dags = {
@@ -2207,7 +2241,7 @@ class HomeView(AdminIndexView):
             auto_complete_data=auto_complete_data)
 
 
-class QueryView(wwwutils.DataProfilingMixin, BaseView):
+class QueryView(wwwutils.SuperUserMixin, wwwutils.DataProfilingMixin, BaseView):
     @expose('/', methods=['POST', 'GET'])
     @wwwutils.gzipped
     @provide_session
@@ -2335,7 +2369,7 @@ def _connection_ids(session=None):
             .group_by(models.Connection.conn_id))]
 
 
-class ChartModelView(wwwutils.DataProfilingMixin, AirflowModelView):
+class ChartModelView(wwwutils.SuperUserMixin, wwwutils.DataProfilingMixin, AirflowModelView):
     verbose_name = "chart"
     verbose_name_plural = "charts"
     form_columns = (
@@ -2452,7 +2486,7 @@ chart_mapping = (
 chart_mapping = dict(chart_mapping)
 
 
-class KnownEventView(wwwutils.DataProfilingMixin, AirflowModelView):
+class KnownEventView(wwwutils.SuperUserMixin, wwwutils.DataProfilingMixin, AirflowModelView):
     verbose_name = "known event"
     verbose_name_plural = "known events"
     form_columns = (
@@ -2517,7 +2551,7 @@ class KnownEventView(wwwutils.DataProfilingMixin, AirflowModelView):
     form_overrides = dict(start_date=DateTimeField, end_date=DateTimeField)
 
 
-class KnownEventTypeView(wwwutils.DataProfilingMixin, AirflowModelView):
+class KnownEventTypeView(wwwutils.SuperUserMixin, wwwutils.DataProfilingMixin, AirflowModelView):
     pass
 
 
@@ -2534,7 +2568,7 @@ class KnownEventTypeView(wwwutils.DataProfilingMixin, AirflowModelView):
 # admin.add_view(mv)
 
 
-class VariableView(wwwutils.DataProfilingMixin, AirflowModelView):
+class VariableView(wwwutils.SuperUserMixin, wwwutils.DataProfilingMixin, AirflowModelView):
     verbose_name = "Variable"
     verbose_name_plural = "Variables"
     list_template = 'airflow/variable_list.html'
@@ -2634,7 +2668,7 @@ class XComView(wwwutils.SuperUserMixin, AirflowModelView):
     form_overrides = dict(execution_date=DateTimeField)
 
 
-class JobModelView(ModelViewOnly):
+class JobModelView(wwwutils.SuperUserMixin, ModelViewOnly):
     verbose_name_plural = "jobs"
     verbose_name = "job"
     column_display_actions = False
@@ -2694,12 +2728,14 @@ class DagRunModelView(ModelViewOnly):
     @action('new_delete', "Delete", "Are you sure you want to delete selected records?")
     @provide_session
     def action_new_delete(self, ids, session=None):
-        deleted = set(session.query(models.DagRun)
-                      .filter(models.DagRun.id.in_(ids))
-                      .all())
-        session.query(models.DagRun) \
-            .filter(models.DagRun.id.in_(ids)) \
-            .delete(synchronize_session='fetch')
+        query = session.query(models.DagRun).filter(models.DagRun.id.in_(ids))
+        query = self._keep_only_owned_dr(query)
+        deleted = set(query.all())
+
+        query = session.query(models.DagRun).filter(models.DagRun.id.in_(ids))
+        query = self._keep_only_owned_dr(query)
+        query.delete(synchronize_session='fetch')
+
         session.commit()
         dirty_ids = []
         for row in deleted:
@@ -2713,7 +2749,9 @@ class DagRunModelView(ModelViewOnly):
             DR = models.DagRun
             count = 0
             dirty_ids = []
-            for dr in session.query(DR).filter(DR.id.in_(ids)).all():
+            query = session.query(DR).filter(DR.id.in_(ids))
+            query = self._keep_only_owned_dr(query)
+            for dr in query.all():
                 dirty_ids.append(dr.dag_id)
                 count += 1
                 dr.state = State.RUNNING
@@ -2735,7 +2773,9 @@ class DagRunModelView(ModelViewOnly):
             count = 0
             dirty_ids = []
             altered_tis = []
-            for dr in session.query(DR).filter(DR.id.in_(ids)).all():
+            query = session.query(DR).filter(DR.id.in_(ids))
+            query = self._keep_only_owned_dr(query)
+            for dr in query.all():
                 dirty_ids.append(dr.dag_id)
                 count += 1
                 altered_tis += \
@@ -2762,7 +2802,9 @@ class DagRunModelView(ModelViewOnly):
             count = 0
             dirty_ids = []
             altered_tis = []
-            for dr in session.query(DR).filter(DR.id.in_(ids)).all():
+            query = session.query(DR).filter(DR.id.in_(ids))
+            query = self._keep_only_owned_dr(query)
+            for dr in query.all():
                 dirty_ids.append(dr.dag_id)
                 count += 1
                 altered_tis += \
@@ -2809,8 +2851,27 @@ class DagRunModelView(ModelViewOnly):
             "1 dag run and {altered_ti_count} task instances "
             "were set to '{dagrun.state}'".format(**locals()))
 
+    @staticmethod
+    def _keep_only_owned_dr(query):
+        if not FILTER_BY_OWNER or current_user.is_superuser():
+            return query
 
-class LogModelView(ModelViewOnly):
+        return (
+            query.
+                join(models.DagModel, and_(models.DagModel.dag_id == models.DagRun.dag_id)).
+                filter(models.DagModel.owners.in_(current_user.osp_groups))
+        )
+
+    def get_query(self):
+        query = super(DagRunModelView, self).get_query()
+        return self._keep_only_owned_dr(query)
+
+    def get_count_query(self):
+        count_query = super(DagRunModelView, self).get_count_query()
+        return self._keep_only_owned_dr(count_query)
+
+
+class LogModelView(wwwutils.SuperUserMixin, ModelViewOnly):
     verbose_name_plural = "logs"
     verbose_name = "log"
     column_display_actions = False
@@ -2916,6 +2977,17 @@ class TaskInstanceModelView(ModelViewOnly):
                 raise Exception("Ooops")
             flash('Failed to clear task instances', 'error')
 
+    @staticmethod
+    def _keep_only_owned_ti(query):
+        if not FILTER_BY_OWNER or current_user.is_superuser():
+            return query
+
+        return (
+            query.
+                join(models.DagModel, and_(models.DagModel.dag_id == models.TaskInstance.dag_id)).
+                filter(models.DagModel.owners.in_(current_user.osp_groups))
+        )
+
     @provide_session
     def set_task_instance_state(self, ids, target_state, session=None):
         try:
@@ -2924,10 +2996,11 @@ class TaskInstanceModelView(ModelViewOnly):
             for id in ids:
                 task_id, dag_id, execution_date = iterdecode(id)
                 execution_date = parse_execution_date(execution_date)
-
-                ti = session.query(TI).filter(TI.task_id == task_id,
-                                              TI.dag_id == dag_id,
-                                              TI.execution_date == execution_date).one()
+                query = session.query(TI).filter(TI.task_id == task_id,
+                                                 TI.dag_id == dag_id,
+                                                 TI.execution_date == execution_date)
+                query = self._keep_only_owned_ti(query)
+                ti = query.one()
                 ti.state = target_state
             session.commit()
             flash(
@@ -2946,7 +3019,17 @@ class TaskInstanceModelView(ModelViewOnly):
         """
         task_id, dag_id, execution_date = iterdecode(id)
         execution_date = pendulum.parse(execution_date)
-        return self.session.query(self.model).get((task_id, dag_id, execution_date))
+        query = self.session.query(self.model)
+        query = self._keep_only_owned_ti(query)
+        return query.get((task_id, dag_id, execution_date))
+
+    def get_query(self):
+        query = super(TaskInstanceModelView, self).get_query()
+        return self._keep_only_owned_ti(query)
+
+    def get_count_query(self):
+        count_query = super(TaskInstanceModelView, self).get_count_query()
+        return self._keep_only_owned_ti(count_query)
 
 
 class ConnectionModelView(wwwutils.SuperUserMixin, AirflowModelView):
