@@ -73,8 +73,9 @@ class GoogleUser(models.User):
 
     def is_superuser(self):
         '''Access all the things'''
-        return 'osp' in self.osp_groups()
+        return 'osp' in self.osp_groups
 
+    @property
     def osp_groups(self):
         if self.osp_auth_metadata is None:
             self.osp_auth_metadata = get_auth_metadata(self.user.email).get('projects', [])
