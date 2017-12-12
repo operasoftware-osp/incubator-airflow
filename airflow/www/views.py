@@ -80,7 +80,7 @@ from airflow.www import utils as wwwutils
 from airflow.www.forms import DateTimeForm, DateTimeWithNumRunsForm
 from airflow.www.validators import GreaterEqualThan
 
-from airflow.api.auth.backend.osp_auth import osp_expose_only_owned_entities, osp_allow_superuser_only
+from airflow.api.auth.backend.osp_auth import osp_expose_only_owned_entities, osp_allow_superuser_only, DagOwnerInList
 
 QUERY_LIMIT = 100000
 CHART_LIMIT = 200000
@@ -474,7 +474,6 @@ class Airflow(BaseView):
 
     @expose('/dag_stats')
     @login_required
-    @osp_allow_superuser_only
     def dag_stats(self):
         ds = models.DagStat
         session = Session()
@@ -510,7 +509,6 @@ class Airflow(BaseView):
 
     @expose('/task_stats')
     @login_required
-    @osp_allow_superuser_only
     def task_stats(self):
         TI = models.TaskInstance
         DagRun = models.DagRun
@@ -2399,7 +2397,7 @@ class JobModelView(wwwutils.SuperUserMixin, ModelViewOnly):
         latest_heartbeat=datetime_f)
 
 
-class DagRunModelView(wwwutils.SuperUserMixin, ModelViewOnly):
+class DagRunModelView(ModelViewOnly):
     verbose_name_plural = "DAG Runs"
     can_edit = True
     can_create = True
@@ -2429,12 +2427,15 @@ class DagRunModelView(wwwutils.SuperUserMixin, ModelViewOnly):
     @action('new_delete', "Delete", "Are you sure you want to delete selected records?")
     def action_new_delete(self, ids):
         session = settings.Session()
-        deleted = set(session.query(models.DagRun)
-                      .filter(models.DagRun.id.in_(ids))
-                      .all())
-        session.query(models.DagRun) \
-            .filter(models.DagRun.id.in_(ids)) \
-            .delete(synchronize_session='fetch')
+        query = session.query(models.DagRun).filter(models.DagRun.id.in_(ids))
+        query = self._keep_only_owned_dr(query)
+
+        deleted = set(query.all())
+
+        query = session.query(models.DagRun).filter(models.DagRun.id.in_(ids))
+        query = self._keep_only_owned_dr(query)
+        query.delete(synchronize_session='fetch')
+
         session.commit()
         dirty_ids = []
         for row in deleted:
@@ -2460,7 +2461,9 @@ class DagRunModelView(wwwutils.SuperUserMixin, ModelViewOnly):
             DR = models.DagRun
             count = 0
             dirty_ids = []
-            for dr in session.query(DR).filter(DR.id.in_(ids)).all():
+            query = session.query(DR).filter(DR.id.in_(ids))
+            query = self._keep_only_owned_dr(query)
+            for dr in query.all():
                 dirty_ids.append(dr.dag_id)
                 count += 1
                 dr.state = target_state
@@ -2477,6 +2480,25 @@ class DagRunModelView(wwwutils.SuperUserMixin, ModelViewOnly):
                 raise Exception("Ooops")
             flash('Failed to set state', 'error')
 
+    @staticmethod
+    def _keep_only_owned_dr(query):
+        if current_user.is_superuser():
+            return query
+
+        return (
+            query.
+                join(models.DagModel, and_(models.DagModel.dag_id == models.DagRun.dag_id)).
+                filter(models.DagModel.owners.in_(current_user.osp_groups))
+        )
+
+    def get_query(self):
+        query = super(DagRunModelView, self).get_query()
+        return self._keep_only_owned_dr(query)
+
+    def get_count_query(self):
+        count_query = super(DagRunModelView, self).get_count_query()
+        return self._keep_only_owned_dr(count_query)
+
 
 class LogModelView(wwwutils.SuperUserMixin, ModelViewOnly):
     verbose_name_plural = "logs"
@@ -2488,7 +2510,7 @@ class LogModelView(wwwutils.SuperUserMixin, ModelViewOnly):
         dttm=datetime_f, execution_date=datetime_f, dag_id=dag_link)
 
 
-class TaskInstanceModelView(wwwutils.SuperUserMixin, ModelViewOnly):
+class TaskInstanceModelView(ModelViewOnly):
     verbose_name_plural = "task instances"
     verbose_name = "task instance"
     column_filters = (
@@ -2553,6 +2575,16 @@ class TaskInstanceModelView(wwwutils.SuperUserMixin, ModelViewOnly):
         else:
             super(TaskInstanceModelView, self).action_delete(ids)
 
+    @staticmethod
+    def _keep_only_owned_ti(query):
+        if not current_user.is_superuser():
+            return (
+                query.
+                    join(models.DagModel, and_(models.DagModel.dag_id == models.TaskInstance.dag_id)).
+                    filter(models.DagModel.owners.in_(current_user.osp_groups))
+            )
+        return query
+
     @provide_session
     def set_task_instance_state(self, ids, target_state, session=None):
         try:
@@ -2561,9 +2593,12 @@ class TaskInstanceModelView(wwwutils.SuperUserMixin, ModelViewOnly):
             for id in ids:
                 task_id, dag_id, execution_date = id.split(',')
                 execution_date = datetime.strptime(execution_date, '%Y-%m-%d %H:%M:%S')
-                ti = session.query(TI).filter(TI.task_id == task_id,
-                                              TI.dag_id == dag_id,
-                                              TI.execution_date == execution_date).one()
+                query = session.query(TI).filter(TI.task_id == task_id,
+                                                 TI.dag_id == dag_id,
+                                                 TI.execution_date == execution_date)
+                query = self._keep_only_owned_ti(query)
+
+                ti = query.one()
                 ti.state = target_state
             session.commit()
             flash(
@@ -2581,9 +2616,11 @@ class TaskInstanceModelView(wwwutils.SuperUserMixin, ModelViewOnly):
             for id in ids:
                 task_id, dag_id, execution_date = id.split(',')
                 execution_date = datetime.strptime(execution_date, '%Y-%m-%d %H:%M:%S')
-                count += session.query(TI).filter(TI.task_id == task_id,
+                query = session.query(TI).filter(TI.task_id == task_id,
                                                   TI.dag_id == dag_id,
-                                                  TI.execution_date == execution_date).delete()
+                                                  TI.execution_date == execution_date)
+                query = self._keep_only_owned_ti(query)
+                count += query.delete()
             session.commit()
             flash("{count} task instances were deleted".format(**locals()))
         except Exception as ex:
@@ -2600,7 +2637,17 @@ class TaskInstanceModelView(wwwutils.SuperUserMixin, ModelViewOnly):
         """
         task_id, dag_id, execution_date = iterdecode(id)
         execution_date = dateutil.parser.parse(execution_date)
-        return self.session.query(self.model).get((task_id, dag_id, execution_date))
+        query = self.session.query(self.model)
+        query = self._keep_only_owned_ti(query)
+        return query.get((task_id, dag_id, execution_date))
+
+    def get_query(self):
+        query = super(TaskInstanceModelView, self).get_query()
+        return self._keep_only_owned_ti(query)
+
+    def get_count_query(self):
+        count_query = super(TaskInstanceModelView, self).get_count_query()
+        return self._keep_only_owned_ti(count_query)
 
 
 class ConnectionModelView(wwwutils.SuperUserMixin, AirflowModelView):
