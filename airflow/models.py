@@ -1741,17 +1741,19 @@ class TaskInstance(Base, LoggingMixin):
         task = self.task
         title = "Airflow alert: {self}".format(**locals())
         exception = str(exception).replace('\n', '<br>')
-        # For reporting purposes, we report based on 1-indexed,
-        # not 0-indexed lists (i.e. Try 1 instead of
-        # Try 0 for the first attempt).
-        body = (
-            "Try {try_number} out of {max_tries}<br>"
+        if task.email_alert_body_template:
+            body_template = task.email_alert_body_template
+        else:
+            body_template = "Try {try_number} out of {max_tries}<br>"
             "Exception:<br>{exception}<br>"
             "Log: <a href='{self.log_url}'>Link</a><br>"
             "Host: {self.hostname}<br>"
             "Log file: {self.log_filepath}<br>"
             "Mark success: <a href='{self.mark_success_url}'>Link</a><br>"
-        ).format(try_number=self.try_number + 1, max_tries=self.max_tries + 1, **locals())
+        # For reporting purposes, we report based on 1-indexed,
+        # not 0-indexed lists (i.e. Try 1 instead of
+        # Try 0 for the first attempt).
+        body = body_template.format(try_number=self.try_number, max_tries=self.max_tries + 1, **locals())
         send_email(task.email, title, body)
 
     def set_duration(self):
@@ -2122,6 +2124,7 @@ class BaseOperator(LoggingMixin):
             resources=None,
             run_as_user=None,
             task_concurrency=None,
+            email_alert_body_template=None,
             *args,
             **kwargs):
 
@@ -2188,6 +2191,7 @@ class BaseOperator(LoggingMixin):
         self.resources = Resources(**(resources or {}))
         self.run_as_user = run_as_user
         self.task_concurrency = task_concurrency
+        self.email_alert_body_template = email_alert_body_template
 
         # Private attributes
         self._upstream_task_ids = []
