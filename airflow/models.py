@@ -1744,12 +1744,12 @@ class TaskInstance(Base, LoggingMixin):
         if task.email_alert_body_template:
             body_template = task.email_alert_body_template
         else:
-            body_template = "Try {try_number} out of {max_tries}<br>"
-            "Exception:<br>{exception}<br>"
-            "Log: <a href='{self.log_url}'>Link</a><br>"
-            "Host: {self.hostname}<br>"
-            "Log file: {self.log_filepath}<br>"
-            "Mark success: <a href='{self.mark_success_url}'>Link</a><br>"
+            body_template = ("Try {try_number} out of {max_tries}<br>"
+                             "Exception:<br>{exception}<br>"
+                             "Log: <a href='{self.log_url}'>Link</a><br>"
+                             "Host: {self.hostname}<br>"
+                             "Log file: {self.log_filepath}<br>"
+                             "Mark success: <a href='{self.mark_success_url}'>Link</a><br>")
         # For reporting purposes, we report based on 1-indexed,
         # not 0-indexed lists (i.e. Try 1 instead of
         # Try 0 for the first attempt).
