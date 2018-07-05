@@ -13,4 +13,4 @@
 # limitations under the License.
 #
 
-version = '1.9.0+osp2'
+version = '1.9.0rc8+osp1'
