@@ -2,18 +2,19 @@ import airflow
 
 from functools import wraps
 from flask import Response, request
-from airflow import models, settings
+from airflow import models, settings, conf
 
 from flask_admin.contrib.sqla.filters import FilterInList
 
 current_user = airflow.login.current_user
 dagbag = models.DagBag(settings.DAGS_FOLDER)
+skip_authentication = not conf.getboolean('webserver', 'authenticate')
 
 
 def osp_allow_superuser_only(function):
     @wraps(function)
     def decorated(*args, **kwargs):
-        if current_user.is_superuser():
+        if skip_authentication or current_user.is_superuser():
             return function(*args, **kwargs)
         return Response("Forbidden", 403)
 
@@ -23,7 +24,7 @@ def osp_allow_superuser_only(function):
 def osp_expose_only_owned_entities(function):
     @wraps(function)
     def decorated(*args, **kwargs):
-        if current_user.is_superuser():
+        if skip_authentication or current_user.is_superuser():
             return function(*args, **kwargs)
 
         # Here I assume that url encoded filter for dag_id is under flt1
