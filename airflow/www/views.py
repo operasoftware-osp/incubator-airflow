@@ -2482,7 +2482,7 @@ class DagRunModelView(ModelViewOnly):
 
     @staticmethod
     def _keep_only_owned_dr(query):
-        if current_user.is_superuser():
+        if not FILTER_BY_OWNER or current_user.is_superuser():
             return query
 
         return (
