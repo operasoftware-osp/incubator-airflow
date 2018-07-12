@@ -2669,6 +2669,9 @@ class ConnectionModelView(wwwutils.SuperUserMixin, AirflowModelView):
         'extra__google_cloud_platform__key_path',
         'extra__google_cloud_platform__keyfile_dict',
         'extra__google_cloud_platform__scope',
+        'extra__vault_google_cloud_platform__secret_engine_path',
+        'extra__vault_google_cloud_platform__roleset',
+        'extra__vault_google_cloud_platform__secret_type',
     )
     verbose_name = "Connection"
     verbose_name_plural = "Connections"
@@ -2691,15 +2694,17 @@ class ConnectionModelView(wwwutils.SuperUserMixin, AirflowModelView):
         'extra__google_cloud_platform__key_path': StringField('Keyfile Path'),
         'extra__google_cloud_platform__keyfile_dict': PasswordField('Keyfile JSON'),
         'extra__google_cloud_platform__scope': StringField('Scopes (comma seperated)'),
-
+        'extra__vault_google_cloud_platform__secret_engine_path': StringField('Secret engine path', default='gcp/'),
+        'extra__vault_google_cloud_platform__roleset': StringField('Roleset'),
+        'extra__vault_google_cloud_platform__secret_type': StringField('Secret type', default='service_account', description='service_account/access_token'),
     }
     form_choices = {
-        'conn_type': models.Connection._types
+        'conn_type': models.Connection._types,
     }
 
     def on_model_change(self, form, model, is_created):
         formdata = form.data
-        if formdata['conn_type'] in ['jdbc', 'google_cloud_platform']:
+        if formdata['conn_type'] in ['jdbc', 'google_cloud_platform', 'vault_google_cloud_platform']:
             extra = {
                 key: formdata[key]
                 for key in self.form_extra_fields.keys() if key in formdata}

@@ -534,6 +534,7 @@ class Connection(Base, LoggingMixin):
         ('fs', 'File (path)'),
         ('ftp', 'FTP',),
         ('google_cloud_platform', 'Google Cloud Platform'),
+        ('vault_google_cloud_platform', 'Vault Google Cloud Platform'),
         ('hdfs', 'HDFS',),
         ('http', 'HTTP',),
         ('hive_cli', 'Hive Client Wrapper',),
@@ -700,6 +701,9 @@ class Connection(Base, LoggingMixin):
             elif self.conn_type == 'docker':
                 from airflow.hooks.docker_hook import DockerHook
                 return DockerHook(docker_conn_id=self.conn_id)
+            elif self.conn_type == 'vault_google_cloud_platform':
+                from airflow.contrib.hooks.vault_gcp_hook import VaultGoogleCloudHook
+                return VaultGoogleCloudHook(vault_conn_id=self.conn_id)
         except:
             pass
 
