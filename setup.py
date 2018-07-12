@@ -229,6 +229,7 @@ zendesk = ['zdesk']
 
 all_dbs = postgres + mysql + hive + mssql + hdfs + vertica + cloudant + druid + pinot \
     + cassandra + mongo
+vault = ['hvac>=0.6.1']
 
 devel = [
     'click==6.7',
@@ -380,6 +381,7 @@ def do_setup():
             'snowflake': snowflake,
             'ssh': ssh,
             'statsd': statsd,
+            'vault': vault,
             'vertica': vertica,
             'webhdfs': webhdfs,
             'winrm': winrm
