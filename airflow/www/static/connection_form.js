@@ -31,6 +31,13 @@
             hidden_fields: ['host', 'schema', 'login', 'password', 'port', 'extra'],
             relabeling: {},
         },
+        vault_google_cloud_platform: {
+            hidden_fields: ['schema', 'login', 'port', 'extra'],
+            relabeling: {
+                'host': 'Vault URL',
+                'password': 'Authorization token',
+            },
+        },
         cloudant: {
             hidden_fields: ['port', 'extra'],
             relabeling: {
