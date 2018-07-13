@@ -2577,13 +2577,14 @@ class TaskInstanceModelView(ModelViewOnly):
 
     @staticmethod
     def _keep_only_owned_ti(query):
-        if not current_user.is_superuser():
-            return (
-                query.
-                    join(models.DagModel, and_(models.DagModel.dag_id == models.TaskInstance.dag_id)).
-                    filter(models.DagModel.owners.in_(current_user.osp_groups))
-            )
-        return query
+        if not FILTER_BY_OWNER or current_user.is_superuser():
+            return query
+
+        return (
+            query.
+                join(models.DagModel, and_(models.DagModel.dag_id == models.TaskInstance.dag_id)).
+                filter(models.DagModel.owners.in_(current_user.osp_groups))
+        )
 
     @provide_session
     def set_task_instance_state(self, ids, target_state, session=None):
