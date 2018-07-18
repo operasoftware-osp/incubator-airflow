@@ -49,32 +49,6 @@ class VaultGoogleCloudHook(GoogleCloudBaseHook, DbApiHook, LoggingMixin):
         vault_path = os.path.join(secret_engine_path, self.path_part[secret_type], roleset)
         raise AirflowException(vault_path)
 
-        # elif key_path:
-        #     # if not scope:
-        #     #     raise AirflowException('Scope should be defined when using a key file.')
-        #     # scopes = [s.strip() for s in scope.split(',')]
-
-        #     # Get credentials from a JSON file.
-        #     if key_path.endswith('.json'):
-        #         self.log.info('Getting connection using a JSON key file.')
-        #         credentials = ServiceAccountCredentials\
-        #             .from_json_keyfile_name(key_path, scopes)
-        # else:
-        #     scopes = [s.strip() for s in scope.split(',')]
-
-        #     # Get credentials from JSON data provided in the UI.
-        #     try:
-        #         keyfile_dict = json.loads(keyfile_dict)
-
-        #         # Depending on how the JSON was formatted, it may contain
-        #         # escaped newlines. Convert those to actual newlines.
-        #         keyfile_dict['private_key'] = keyfile_dict['private_key'].replace(
-        #             '\\n', '\n')
-
-        #         credentials = ServiceAccountCredentials\
-        #             .from_json_keyfile_dict(keyfile_dict, scopes)
-        # return credentials
-
     def _get_field(self, f, default=None):
         """
         Fetches a field from extras, and returns it. This is some Airflow
