@@ -23,6 +23,12 @@ that he has permissions on. If a new role wants to access all the dags, the admi
 
 We also provide a new cli command(``sync_perm``) to allow admin to auto sync permissions.
 
+### New `log_processor_manager_location` config option
+
+The DAG parsing manager log now by default will be log into a file, where its location is
+controlled by the new `log_processor_manager_location` config option in core section.
+
+
 ### Setting UTF-8 as default mime_charset in email utils
 
 ### Add a configuration variable(default_dag_run_display_number) to control numbers of dag run for display
