@@ -669,7 +669,7 @@ class Airflow(BaseView):
 
     @expose('/code')
     @login_required
-    @osp_allow_superuser_only
+    @osp_expose_only_owned_entities
     def code(self):
         dag_id = request.args.get('dag_id')
         dag = dagbag.get_dag(dag_id)
@@ -787,7 +787,7 @@ class Airflow(BaseView):
     @login_required
     @wwwutils.action_logging
     @provide_session
-    @osp_allow_superuser_only
+    @osp_expose_only_owned_entities
     def get_logs_with_metadata(self, session=None):
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
