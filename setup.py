@@ -377,6 +377,9 @@ ssh = [
 statsd = [
     'statsd>=3.3.0, <4.0',
 ]
+vault = [
+    'hvac>=0.6.1'
+]
 vertica = [
     'vertica-python>=0.5.1',
 ]
@@ -527,6 +530,7 @@ EXTRAS_REQUIREMENTS = {
     'snowflake': snowflake,
     'ssh': ssh,
     'statsd': statsd,
+            'vault': vault,
     'vertica': vertica,
     'virtualenv': virtualenv,
     'webhdfs': webhdfs,
