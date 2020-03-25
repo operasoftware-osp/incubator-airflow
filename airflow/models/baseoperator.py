@@ -323,6 +323,7 @@ class BaseOperator(LoggingMixin):
         do_xcom_push=True,  # type: bool
         inlets=None,  # type: Optional[Dict]
         outlets=None,  # type: Optional[Dict]
+        email_alert_body_template=None,  # type: str
         *args,
         **kwargs
     ):
@@ -411,6 +412,7 @@ class BaseOperator(LoggingMixin):
         self.task_concurrency = task_concurrency
         self.executor_config = executor_config or {}
         self.do_xcom_push = do_xcom_push
+        self.email_alert_body_template = email_alert_body_template
 
         # Private attributes
         self._upstream_task_ids = set()  # type: Set[str]
