@@ -29,6 +29,8 @@ import time
 import uuid
 from datetime import timedelta
 
+from cached_property import cached_property
+
 from airflow.contrib.hooks.gcp_dataproc_hook import DataProcHook
 from airflow.contrib.hooks.gcs_hook import GoogleCloudStorageHook
 from airflow.exceptions import AirflowException
@@ -693,19 +695,20 @@ class DataProcJobBaseOperator(BaseOperator):
         self.dataproc_jars = dataproc_jars
         self.region = region
         self.job_error_states = job_error_states if job_error_states is not None else {'ERROR'}
-
-        self.hook = DataProcHook(gcp_conn_id=gcp_conn_id,
-                                 delegate_to=delegate_to)
         self.job_template = None
         self.job = None
         self.dataproc_job_id = None
+
+    @cached_property
+    def _hook(self):
+        return DataProcHook(gcp_conn_id=self.gcp_conn_id, delegate_to=self.delegate_to)
 
     def create_job_template(self):
         """
         Initialize `self.job_template` with default values
         """
-        self.job_template = self.hook.create_job_template(self.task_id, self.cluster_name, self.job_type,
-                                                          self.dataproc_properties)
+        self.job_template = self._hook.create_job_template(self.task_id, self.cluster_name, self.job_type,
+                                                           self.dataproc_properties)
         self.job_template.set_job_name(self.job_name)
         self.job_template.add_jar_file_uris(self.dataproc_jars)
         self.job_template.add_labels(self.labels)
@@ -718,7 +721,7 @@ class DataProcJobBaseOperator(BaseOperator):
         if self.job_template:
             self.job = self.job_template.build()
             self.dataproc_job_id = self.job["job"]["reference"]["jobId"]
-            self.hook.submit(self.hook.project_id, self.job, self.region, self.job_error_states)
+            self._hook.submit(self._hook.project_id, self.job, self.region, self.job_error_states)
         else:
             raise AirflowException("Create a job template before")
 
@@ -728,7 +731,7 @@ class DataProcJobBaseOperator(BaseOperator):
         Cancel any running job.
         """
         if self.dataproc_job_id:
-            self.hook.cancel(self.hook.project_id, self.dataproc_job_id, self.region)
+            self._hook.cancel(self._hook.project_id, self.dataproc_job_id, self.region)
 
 
 class DataProcPigOperator(DataProcJobBaseOperator):
