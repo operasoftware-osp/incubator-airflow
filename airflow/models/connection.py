@@ -71,7 +71,6 @@ class Connection(Base, LoggingMixin):
         ('fs', 'File (path)'),
         ('ftp', 'FTP',),
         ('google_cloud_platform', 'Google Cloud Platform'),
-        ('vault_google_cloud_platform', 'Vault Google Cloud Platform'),
         ('hdfs', 'HDFS',),
         ('http', 'HTTP',),
         ('pig_cli', 'Pig Client Wrapper',),
@@ -305,9 +304,6 @@ class Connection(Base, LoggingMixin):
         elif self.conn_type == 'grpc':
             from airflow.contrib.hooks.grpc_hook import GrpcHook
             return GrpcHook(grpc_conn_id=self.conn_id)
-        elif self.conn_type == 'vault_google_cloud_platform':
-            from airflow.contrib.hooks.vault_gcp_hook import VaultGoogleCloudHook
-            return VaultGoogleCloudHook(vault_conn_id=self.conn_id)
         raise AirflowException("Unknown hook type {}".format(self.conn_type))
 
     def __repr__(self):
