@@ -18,4 +18,4 @@
 # under the License.
 #
 
-version = '1.10.12osp1'
+version = '1.10.12osp2'
