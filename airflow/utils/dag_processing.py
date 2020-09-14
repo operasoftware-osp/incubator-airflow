@@ -923,6 +923,7 @@ class DagFileProcessorManager(LoggingMixin):
 
             if self._async_mode:
                 loop_duration = time.time() - loop_start_time
+                self.log.info(f"DagFileProcessorManager loop duration: {loop_duration}")
                 if loop_duration < 1:
                     poll_time = 1 - loop_duration
                 else:
@@ -1422,6 +1423,7 @@ class DagFileProcessorManager(LoggingMixin):
         """
 
         parse_time = (timezone.utcnow() - self._parsing_start_time).total_seconds()
+        self.log.info(f"dag_processing.total_parse_time: {parse_time}")
         Stats.gauge('dag_processing.total_parse_time', parse_time)
         Stats.gauge('dagbag_size', sum(stat.num_dags for stat in self._file_stats.values()))
         Stats.gauge('dag_processing.import_errors',
