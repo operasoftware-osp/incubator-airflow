@@ -910,7 +910,7 @@ class DagFileProcessorManager(LoggingMixin):
             all_files_processed = all(self.get_last_finish_time(x) is not None for x in self.file_paths)
             max_runs_reached = self.max_runs_reached()
 
-            dag_parsing_stat = DagParsingStat(self._file_paths,
+            dag_parsing_stat = DagParsingStat([],
                                               max_runs_reached,
                                               all_files_processed,
                                               )
