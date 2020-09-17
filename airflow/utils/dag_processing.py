@@ -1272,14 +1272,9 @@ class DagFileProcessorManager(LoggingMixin):
                     self._file_process_interval):
                 file_paths_recently_processed.append(file_path)
 
-        files_paths_at_run_limit = [file_path
-                                    for file_path, stat in self._file_stats.items()
-                                    if stat.run_count == self._max_runs]
-
         files_paths_to_queue = list(set(self._file_paths) -
                                     set(file_paths_in_progress) -
-                                    set(file_paths_recently_processed) -
-                                    set(files_paths_at_run_limit))
+                                    set(file_paths_recently_processed))
 
         for file_path, processor in self._processors.items():
             self.log.debug(
@@ -1361,9 +1356,6 @@ class DagFileProcessorManager(LoggingMixin):
         """
         if self._max_runs == -1:  # Unlimited runs.
             return False
-        for stat in self._file_stats.values():
-            if stat.run_count < self._max_runs:
-                return False
         if self._num_run < self._max_runs:
             return False
         return True
