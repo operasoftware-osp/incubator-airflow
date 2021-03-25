@@ -330,7 +330,7 @@ class BaseOperator(LoggingMixin):
     ):
         super().__init__()
 
-        if args or kwargs:
+        if args:
             # TODO remove *args and **kwargs in Airflow 2.0
             warnings.warn(
                 'Invalid arguments were passed to {c} (task_id: {t}). '
