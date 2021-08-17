@@ -72,7 +72,7 @@ from airflow.utils.helpers import alchemy_to_dict, render_log_filename
 from airflow.utils.state import State
 from airflow.www_rbac import utils as wwwutils
 from airflow.www_rbac.app import app, appbuilder
-from airflow.www_rbac.decorators import action_logging, gzipped, has_dag_access
+from airflow.www_rbac.decorators import action_logging, gzipped, has_dag_access, has_dags_access
 from airflow.www_rbac.forms import (DateTimeForm, DateTimeWithNumRunsForm,
                                     DateTimeWithNumRunsWithDagRunsForm,
                                     DagRunForm, ConnectionForm)
@@ -2550,7 +2550,7 @@ class DagRunModelView(AirflowModelView):
 
     @action('muldelete', "Delete", "Are you sure you want to delete selected records?",
             single=False)
-    @has_dag_access(can_dag_edit=True)
+    @has_dags_access(can_dag_edit=True)
     @provide_session
     def action_muldelete(self, items, session=None):
         self.datamodel.delete_all(items)
