@@ -125,3 +125,35 @@ def has_dag_access(**dag_kwargs):
                                         __class__.__name__ + ".login"))
         return wrapper
     return decorator
+
+
+def has_dags_access(**dag_kwargs):
+    """
+    Decorator to check whether the user has read / write permission on the picked dags.
+    """
+
+    def decorator(f):
+        @functools.wraps(f)
+        def wrapper(self, items, **kwargs):
+            has_access = self.appbuilder.sm.has_access
+            dag_ids = set([dag.dag_id for dag in items])
+            can_dag_edit = dag_kwargs.get("can_dag_edit", False)
+
+            if _has_edit_access(dag_ids, has_access) or (not can_dag_edit and _has_read_access(dag_ids, has_access)):
+                return f(self, items, **kwargs)
+            else:
+                return redirect(url_for(self.appbuilder.sm.auth_view.__class__.__name__ + ".login"))
+
+        def _has_read_access(dag_ids, has_access):
+            return has_access("can_dag_read", "all_dags") or all(
+                [has_access("can_dag_read", dag_id) for dag_id in dag_ids]
+            )
+
+        def _has_edit_access(dag_ids, has_access):
+            return has_access("can_dag_edit", "all_dags") or all(
+                [has_access("can_dag_edit", dag_id) for dag_id in dag_ids]
+            )
+
+        return wrapper
+
+    return decorator
