@@ -477,8 +477,7 @@ class SerializedBaseOperator(BaseOperator, BaseSerialization):
             elif _operator_link_class_path in registered_operator_link_classes:
                 single_op_link_class = registered_operator_link_classes[_operator_link_class_path]
             else:
-                log.error("Operator Link class %r not registered", _operator_link_class_path)
-                return {}
+                single_op_link_class = import_string(_operator_link_class_path)
 
             op_predefined_extra_link = cattr.structure(
                 data, single_op_link_class)    # type: BaseOperatorLink
