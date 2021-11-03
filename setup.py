@@ -439,7 +439,7 @@ devel = [
     'freezegun',
     'gitpython',
     'idna<2.9',  # Required for moto 1.3.14
-    'importlib-metadata~=2.0; python_version<"3.9"',
+    'importlib-metadata~=2.0; python_version<"3.9" and python_version>="3.8"',
     'ipdb',
     'jira',
     'mock;python_version<"3.3"',
@@ -622,8 +622,8 @@ INSTALL_REQUIREMENTS = [
     'future>=0.16.0, <0.19',
     'graphviz>=0.12',
     'gunicorn>=19.5.0, <21.0',
-    'importlib-metadata~=2.0; python_version<"3.9"',
     'importlib_resources~=1.4',
+    'importlib-metadata~=2.0; python_version<"3.9" and python_version>="3.8"',
     'iso8601>=0.1.12',
     'jinja2>=2.10.1, <2.12.0',
     'json-merge-patch==0.2',
@@ -643,7 +643,8 @@ INSTALL_REQUIREMENTS = [
     'python-nvd3~=0.15.0',
     'python-slugify>=3.0.0,<5.0',
     'requests>=2.20.0, <2.23.0;python_version<"3.0"',  # Required to keep snowflake happy
-    'requests>=2.20.0, <2.24.0;python_version>="3.0"',  # Required to keep snowflake happy
+    # 'requests>=2.20.0, <2.24.0;python_version>="3.0"',  # Required to keep snowflake happy
+    'requests>=2.20.0, <3;python_version>="3.0"',
     'setproctitle>=1.1.8, <2',
     'sqlalchemy~=1.3',
     'sqlalchemy_jsonfield==0.8.0;python_version<"3.5"',
@@ -656,6 +657,7 @@ INSTALL_REQUIREMENTS = [
     'tzlocal>=1.4,<2.0.0',
     'unicodecsv>=0.14.1',
     'werkzeug<1.0.0',
+    'wtforms<3.0.0',
     'zope.deprecation>=4.0, <5.0',
 ]
 
