@@ -601,6 +601,7 @@ INSTALL_REQUIREMENTS = [
     'tzlocal>=1.4,<2.0.0',
     'unicodecsv>=0.14.1',
     'werkzeug<1.0.0',
+    'wtforms<3.0.0',
     'zope.deprecation>=4.0, <5.0',
 ]
 
