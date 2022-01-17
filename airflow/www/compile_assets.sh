@@ -28,7 +28,7 @@ if [[ -d ./static/dist ]]; then
   rm -f ./static/dist/*
 fi
 
-yarn install --frozen-lockfile
-yarn run build
+npx yarn install --frozen-lockfile
+npx yarn run build
 
 find package.json yarn.lock static/css static/js -type f | sort | xargs md5sum > "${MD5SUM_FILE}"
