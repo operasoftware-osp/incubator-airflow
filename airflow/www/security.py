@@ -438,8 +438,7 @@ class AirflowSecurityManager(SecurityManager, LoggingMixin):
         if not user:
             user = g.user
         # To account for SubDags
-        root_dag_id = dag_id.split(".")[0]
-        dag_resource_name = permissions.resource_name_for_dag(root_dag_id)
+        dag_resource_name = permissions.resource_name_for_dag(dag_id)
 
         return self._has_access(
             user, permissions.ACTION_CAN_EDIT, permissions.RESOURCE_DAG
