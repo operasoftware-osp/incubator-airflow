@@ -41,7 +41,7 @@ PY39 = sys.version_info >= (3, 9)
 
 logger = logging.getLogger(__name__)
 
-version = '2.2.2+osp1'
+version = '2.2.2+osp2'
 
 my_dir = dirname(__file__)
 
