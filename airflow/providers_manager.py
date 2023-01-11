@@ -45,6 +45,24 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+
+class ProvidersImportFilter(logging.Filter):
+    """
+    Filter out:
+    [2023-01-09 17:38:34,116] {providers_manager.py:152} WARNING -
+    Exception when importing 'airflow.providers.neo4j.hooks.neo4j.Neo4jHook' from 'apache-airflow-providers-neo4j'
+    package: No module named 'neo4j'.
+
+    We have no benefit of this warning and it clogs our logs.
+    """
+
+    def filter(self, record):
+        return 0 if "Exception when importing" in record.getMessage() else 1
+
+
+log.addFilter(ProvidersImportFilter())
+
+
 if sys.version_info >= (3, 9):
     from functools import cache
 else:
