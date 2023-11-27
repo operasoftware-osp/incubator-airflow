@@ -760,10 +760,11 @@ class AirflowSecurityManager(SecurityManagerOverride, SecurityManager, LoggingMi
         for rolename, action_names in access_control.items():
             role = self.find_role(rolename)
             if not role:
-                raise AirflowException(
+                self.log.warning(
                     f"The access_control mapping for DAG '{dag_id}' includes a role named "
                     f"'{rolename}', but that role does not exist"
                 )
+                break
 
             action_names = set(action_names)
             invalid_action_names = action_names - self.DAG_ACTIONS
