@@ -26,7 +26,7 @@ isort:skip_file
 """
 from __future__ import annotations
 
-__version__ = "2.7.3+osp.a0"
+__version__ = "2.7.3+osp.a1"
 
 # flake8: noqa: F401
 
