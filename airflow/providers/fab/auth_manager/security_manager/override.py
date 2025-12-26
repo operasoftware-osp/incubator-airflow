@@ -1185,10 +1185,11 @@ class FabAirflowSecurityManagerOverride(AirflowSecurityManagerV2):
         for rolename, resource_actions in access_control.items():
             role = self.find_role(rolename)
             if not role:
-                raise AirflowException(
+                self.log.warning(
                     f"The access_control mapping for DAG '{dag_id}' includes a role named "
                     f"'{rolename}', but that role does not exist"
                 )
+                break
 
             if isinstance(resource_actions, (set, list)):
                 # Support for old-style access_control where only the actions are specified
