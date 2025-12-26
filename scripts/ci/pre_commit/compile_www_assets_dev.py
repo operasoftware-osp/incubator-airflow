@@ -49,14 +49,14 @@ if __name__ == "__main__":
     WWW_ASSET_OUT_FILE.unlink(missing_ok=True)
     with open(WWW_ASSET_OUT_DEV_MODE_FILE, "w") as f:
         subprocess.run(
-            ["yarn", "install", "--frozen-lockfile"],
+            ["npx", "yarn", "install", "--frozen-lockfile"],
             cwd=os.fspath(www_directory),
             check=True,
             stdout=f,
             stderr=subprocess.STDOUT,
         )
         subprocess.run(
-            ["yarn", "dev"],
+            ["npx", "yarn", "dev"],
             check=True,
             cwd=os.fspath(www_directory),
             env=env,
